@@ -1,0 +1,255 @@
+<?xml version="1.0"?>
+
+<robot name="one_leg">
+<mujoco>
+    <compiler
+        meshdir="../meshes"
+        balanceinertia="true"
+        discardvisual="false"/>
+</mujoco>
+
+    <!-- ========================================================= -->
+    <!--                         MILD LINK                         -->
+    <!--                    ROOT / REFERENCE                      -->
+    <!-- ========================================================= -->
+
+    <link name="mild_link">
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <geometry>
+                <mesh filename="../meshes/mild_link.stl"
+                scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <geometry>
+                <mesh filename="../meshes/mild_link.stl"
+                scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+    </link>
+
+
+    <!-- ========================================================= -->
+    <!--                         RECTANGLE                         -->
+    <!-- ========================================================= -->
+
+    <link name="rectangle">
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <geometry>
+                <mesh filename="../meshes/rectangle.stl"
+                scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <geometry>
+                <mesh filename="../meshes/rectangle.stl"
+                scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+    </link>
+
+
+    <!-- ========================================================= -->
+    <!--                           LINK 1                          -->
+    <!-- ========================================================= -->
+
+    <link name="link1">
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <geometry>
+                <mesh filename="../meshes/link1.stl"
+                scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <geometry>
+                <mesh filename="../meshes/link1.stl"
+                scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+    </link>
+
+
+    <!-- ========================================================= -->
+    <!--                           LINK 2                          -->
+    <!-- ========================================================= -->
+
+    <link name="link2">
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <geometry>
+                <mesh filename="../meshes/link2.stl"
+                scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <geometry>
+                <mesh filename="../meshes/link2.stl"
+                scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+    </link>
+
+
+    <!-- ========================================================= -->
+    <!--                          JOINT 1                           -->
+    <!--              MILD LINK -> RECTANGLE                      -->
+    <!-- ========================================================= -->
+
+    <joint name="mild_to_rectangle"
+           type="revolute">
+
+        <!-- Parent = fixed/reference part -->
+        <parent link="mild_link"/>
+
+        <!-- Child = rotating rectangle -->
+        <child link="rectangle"/>
+
+        <!--
+            Joint 1 position from SolidWorks:
+
+            X = 0 mm
+            Y = 0 mm
+            Z = 0 mm
+
+            Converted to meters:
+            X = 0
+            Y = 0
+            Z = 0
+        -->
+        <origin
+            xyz="0 0 0"
+            rpy="0 0 0"/>
+
+        <!-- Rotation axis = Z -->
+        <axis xyz="0 1 0"/>
+
+        <!-- TEMPORARY limits -->
+        <limit
+            lower="-1.57"
+            upper="1.57"
+            effort="100"
+            velocity="10"/>
+
+    </joint>
+
+
+    <!-- ========================================================= -->
+    <!--                          JOINT 2                           -->
+    <!--                MILD LINK -> LINK 1                        -->
+    <!-- ========================================================= -->
+
+    <joint name="mild_to_link1"
+           type="revolute">
+
+        <!-- Parent = mild_link -->
+        <parent link="mild_link"/>
+
+        <!-- Child = link1 -->
+        <child link="link1"/>
+
+        <!--
+            Joint 2 position from SolidWorks:
+
+            X = 9.74 mm
+            Y = 34.53 mm
+            Z = 8.95 mm
+
+            Converted to meters:
+            X = 0.00974
+            Y = 0.03453
+            Z = 0.00895
+        -->
+        <origin
+            xyz="0.00974 0.03453 0.00895"
+            rpy="0 0 0"/>
+
+        <!-- Rotation axis = Z -->
+        <axis xyz="0 0 1"/>
+
+        <!-- TEMPORARY limits -->
+        <limit
+            lower="-1.57"
+            upper="1.57"
+            effort="100"
+            velocity="10"/>
+
+    </joint>
+
+
+    <!-- ========================================================= -->
+    <!--                          JOINT 3                           -->
+    <!--                   LINK 1 -> LINK 2                        -->
+    <!-- ========================================================= -->
+
+    <joint name="link1_to_link2"
+           type="revolute">
+
+        <!-- Parent = link1 -->
+        <parent link="link1"/>
+
+        <!-- Child = link2 -->
+        <child link="link2"/>
+
+        <!--
+            SolidWorks common-coordinate positions:
+
+            J2 = (9.74, 34.53, 8.95) mm
+            J3 = (102.46, 112.03, 8.74) mm
+
+            Relative position:
+
+            X = 102.46 - 9.74  = 92.72 mm
+            Y = 112.03 - 34.53 = 77.50 mm
+            Z = 8.74 - 8.95    = -0.21 mm
+
+            Converted to meters:
+
+            X = 0.09272
+            Y = 0.07750
+            Z = -0.00021
+        -->
+        <origin
+            xyz="0.09272 0.07750 -0.00021"
+            rpy="0 0 0"/>
+
+        <!-- Rotation axis = Z -->
+        <axis xyz="0 0 1"/>
+
+        <!-- TEMPORARY limits -->
+        <limit
+            lower="-1.57"
+            upper="1.57"
+            effort="100"
+            velocity="10"/>
+
+    </joint>
+
+
+</robot>
