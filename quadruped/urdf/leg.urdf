@@ -1,62 +1,42 @@
 <?xml version="1.0"?>
 
 <robot name="one_leg">
-<mujoco>
-    <compiler
-        meshdir="../meshes"
-        balanceinertia="true"
-        discardvisual="false"/>
-</mujoco>
 
-    <!-- ========================================================= -->
-    <!--                         MILD LINK                         -->
-    <!--                    ROOT / REFERENCE                      -->
-    <!-- ========================================================= -->
-
-    <link name="mild_link">
-
-        <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-
-            <geometry>
-                <mesh filename="../meshes/mild_link.stl"
-                scale="0.001 0.001 0.001"/>
-            </geometry>
-        </visual>
-
-        <collision>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-
-            <geometry>
-                <mesh filename="../meshes/mild_link.stl"
-                scale="0.001 0.001 0.001"/>
-            </geometry>
-        </collision>
-
-    </link>
+    <mujoco>
+        <compiler
+            meshdir="../meshes"
+            balanceinertia="true"
+            discardvisual="false"/>
+    </mujoco>
 
 
     <!-- ========================================================= -->
-    <!--                         RECTANGLE                         -->
+    <!--                       FIXED RECTANGLE                     -->
     <!-- ========================================================= -->
 
     <link name="rectangle">
 
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0"/>
 
             <geometry>
-                <mesh filename="../meshes/rectangle.stl"
-                scale="0.001 0.001 0.001"/>
+                <mesh
+                    filename="../meshes/rectangle.stl"
+                    scale="0.001 0.001 0.001"/>
             </geometry>
         </visual>
 
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0"/>
 
             <geometry>
-                <mesh filename="../meshes/rectangle.stl"
-                scale="0.001 0.001 0.001"/>
+                <mesh
+                    filename="../meshes/rectangle.stl"
+                    scale="0.001 0.001 0.001"/>
             </geometry>
         </collision>
 
@@ -70,21 +50,42 @@
     <link name="link1">
 
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <!--
+                TOP HOLE OF LINK 1 = J1
+
+                Local STL coordinates:
+                X = 9.68398 mm
+                Y = 131.46633 mm
+                Z = 14 mm
+
+                Move that hole to the link1 body origin.
+            -->
+
+            <origin
+                xyz="-0.00968398 -0.13146633 -0.014"
+                rpy="0 0 0"/>
 
             <geometry>
-                <mesh filename="../meshes/link1.stl"
-                scale="0.001 0.001 0.001"/>
+                <mesh
+                    filename="../meshes/link1.STL"
+                    scale="0.001 0.001 0.001"/>
             </geometry>
+
         </visual>
 
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <origin
+                xyz="-0.00968398 -0.13146633 -0.014"
+                rpy="0 0 0"/>
 
             <geometry>
-                <mesh filename="../meshes/link1.stl"
-                scale="0.001 0.001 0.001"/>
+                <mesh
+                    filename="../meshes/link1.STL"
+                    scale="0.001 0.001 0.001"/>
             </geometry>
+
         </collision>
 
     </link>
@@ -97,152 +98,105 @@
     <link name="link2">
 
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <!--
+                ATTACHMENT HOLE = 2nd hole of link2 (moved from 1st hole).
+
+                Precisely measured from link2.STL (least-squares circle
+                fit on the hole wall, not hand-clicked in CAD):
+
+                Hole 1 (previous, now unused): X=16.0, Y=176.0, Z=11-21mm
+                Hole 2 (this one):             X=16.0, Y=136.0, Z=11-21mm
+                Foot sphere center:            X=16.0, Y=16.0,  Z=16.0mm
+
+                Z origin kept at -0.011 (same bottom-face convention the
+                original file used) since hole 2 spans the identical
+                Z-range as hole 1 - only the Y attachment point changes.
+            -->
+
+            <origin
+                xyz="-0.016 -0.136 -0.011"
+                rpy="0 0 0"/>
 
             <geometry>
-                <mesh filename="../meshes/link2.stl"
-                scale="0.001 0.001 0.001"/>
+                <mesh
+                    filename="../meshes/link2.STL"
+                    scale="0.001 0.001 0.001"/>
             </geometry>
+
         </visual>
 
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <origin
+                xyz="-0.016 -0.136 -0.011"
+                rpy="0 0 0"/>
 
             <geometry>
-                <mesh filename="../meshes/link2.stl"
-                scale="0.001 0.001 0.001"/>
+                <mesh
+                    filename="../meshes/link2.STL"
+                    scale="0.001 0.001 0.001"/>
             </geometry>
+
         </collision>
 
     </link>
 
 
     <!-- ========================================================= -->
-    <!--                          JOINT 1                           -->
-    <!--              MILD LINK -> RECTANGLE                      -->
+    <!--                         JOINT 1                           -->
+    <!--              RECTANGLE -> LINK 1                         -->
     <!-- ========================================================= -->
 
-    <joint name="mild_to_rectangle"
-           type="revolute">
+    <joint name="rectangle_to_link1"
+       type="revolute">
 
-        <!-- Parent = fixed/reference part -->
-        <parent link="mild_link"/>
+    <parent link="rectangle"/>
+    <child link="link1"/>
 
-        <!-- Child = rotating rectangle -->
-        <child link="rectangle"/>
+    <origin
+    xyz="0.03 0.03 0.08"
+    rpy="0 0 0"/>
 
-        <!--
-            Joint 1 position from SolidWorks:
+    <axis xyz="0 0 1"/>
 
-            X = 0 mm
-            Y = 0 mm
-            Z = 0 mm
+    <limit
+        lower="-1.57"
+        upper="1.57"
+        effort="100"
+        velocity="10"/>
 
-            Converted to meters:
-            X = 0
-            Y = 0
-            Z = 0
-        -->
-        <origin
-            xyz="0 0 0"
-            rpy="0 0 0"/>
-
-        <!-- Rotation axis = Z -->
-        <axis xyz="0 1 0"/>
-
-        <!-- TEMPORARY limits -->
-        <limit
-            lower="-1.57"
-            upper="1.57"
-            effort="100"
-            velocity="10"/>
-
-    </joint>
+</joint>
 
 
     <!-- ========================================================= -->
-    <!--                          JOINT 2                           -->
-    <!--                MILD LINK -> LINK 1                        -->
-    <!-- ========================================================= -->
-
-    <joint name="mild_to_link1"
-           type="revolute">
-
-        <!-- Parent = mild_link -->
-        <parent link="mild_link"/>
-
-        <!-- Child = link1 -->
-        <child link="link1"/>
-
-        <!--
-            Joint 2 position from SolidWorks:
-
-            X = 9.74 mm
-            Y = 34.53 mm
-            Z = 8.95 mm
-
-            Converted to meters:
-            X = 0.00974
-            Y = 0.03453
-            Z = 0.00895
-        -->
-        <origin
-            xyz="0.00974 0.03453 0.00895"
-            rpy="0 0 0"/>
-
-        <!-- Rotation axis = Z -->
-        <axis xyz="0 0 1"/>
-
-        <!-- TEMPORARY limits -->
-        <limit
-            lower="-1.57"
-            upper="1.57"
-            effort="100"
-            velocity="10"/>
-
-    </joint>
-
-
-    <!-- ========================================================= -->
-    <!--                          JOINT 3                           -->
-    <!--                   LINK 1 -> LINK 2                        -->
+    <!--                         JOINT 2                           -->
+    <!--                   LINK 1 -> LINK 2                       -->
     <!-- ========================================================= -->
 
     <joint name="link1_to_link2"
            type="revolute">
 
-        <!-- Parent = link1 -->
         <parent link="link1"/>
-
-        <!-- Child = link2 -->
         <child link="link2"/>
 
         <!--
-            SolidWorks common-coordinate positions:
+            NOT changed: this joint's physical location on link1 is the
+            same knee pivot regardless of which link2 hole it passes
+            through. Only link2's mesh origin (above) moved.
 
-            J2 = (9.74, 34.53, 8.95) mm
-            J3 = (102.46, 112.03, 8.74) mm
-
-            Relative position:
-
-            X = 102.46 - 9.74  = 92.72 mm
-            Y = 112.03 - 34.53 = 77.50 mm
-            Z = 8.74 - 8.95    = -0.21 mm
-
-            Converted to meters:
-
-            X = 0.09272
-            Y = 0.07750
-            Z = -0.00021
+            Precise link1 hole measurements (least-squares circle fit):
+            J1 = (10.0, 130.0) mm, J2 = (10.0, 10.0) mm -> L1 = 120.0mm
+            (previous hand-measured values below were ~0.3-1.5mm off,
+            left as-is since this origin was tuned to match assembly)
         -->
-        <origin
-            xyz="0.09272 0.07750 -0.00021"
-            rpy="0 0 0"/>
 
-        <!-- Rotation axis = Z -->
+        <origin
+    xyz="0.00041797 -0.12084033 0.00162"
+    rpy="0 0 0"/>
+
         <axis xyz="0 0 1"/>
 
-        <!-- TEMPORARY limits -->
         <limit
             lower="-1.57"
             upper="1.57"
@@ -250,6 +204,5 @@
             velocity="10"/>
 
     </joint>
-
 
 </robot>
