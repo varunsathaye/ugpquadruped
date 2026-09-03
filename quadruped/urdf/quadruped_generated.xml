@@ -1,0 +1,84 @@
+<mujoco model="quadruped">
+  <compiler angle="radian" meshdir="../meshes/"/>
+
+  <asset>
+    <mesh name="rectangle" content_type="model/stl" file="../meshes/rectangle.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="link1" content_type="model/stl" file="../meshes/link1.STL" scale="0.001 0.001 0.001"/>
+    <mesh name="link2" content_type="model/stl" file="../meshes/link2.STL" scale="0.001 0.001 0.001"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" type="plane" size="0.5 0.5 0.01" pos="0.15 0 -0.0638" rgba="0.55 0.55 0.55 1"/>
+
+    <body name="rectangle_FR" pos="0.17956 -0.12527 0.09025" euler="1.5707963267948966 0 0">
+      <geom pos="0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="rectangle"/>
+      <geom pos="0 0 0" type="mesh" mesh="rectangle"/>
+      <body name="link1_FR" pos="0.03 0.03 0.057540714">
+        <joint name="rectangle_to_link1_FR" range="-1.57 1.57" actuatorfrcrange="-100 100"/>
+        <geom pos="-0.00968398 -0.13146633 -0.014" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link1"/>
+        <geom pos="-0.00968398 -0.13146633 -0.014" type="mesh" mesh="link1"/>
+        <body name="link2_FR" pos="0.00041797 -0.12084033 0.00162">
+          <site name="foot_site_FR" type="sphere" size="0.02" pos="0 -0.12 0.005" rgba="1 0 0 0.4"/>
+          <joint name="link1_to_link2_FR" range="-1.57 1.57" actuatorfrcrange="-100 100"/>
+          <geom pos="-0.016 -0.136 -0.011" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link2"/>
+          <geom pos="-0.016 -0.136 -0.011" type="mesh" mesh="link2"/>
+        </body>
+      </body>
+    </body>
+
+    <body name="rectangle_BR" pos="-0.02044 -0.12486 0.09025" euler="1.5707963267948966 0 0">
+      <geom pos="0 0 0" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="rectangle"/>
+      <geom pos="0 0 0" type="mesh" mesh="rectangle"/>
+      <body name="link1_BR" pos="0.03 0.03 0.057540714">
+        <joint name="rectangle_to_link1_BR" range="-1.57 1.57" actuatorfrcrange="-100 100"/>
+        <geom pos="-0.00968398 -0.13146633 -0.014" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link1"/>
+        <geom pos="-0.00968398 -0.13146633 -0.014" type="mesh" mesh="link1"/>
+        <body name="link2_BR" pos="0.00041797 -0.12084033 0.00162">
+          <site name="foot_site_BR" type="sphere" size="0.02" pos="0 -0.12 0.005" rgba="1 0 0 0.4"/>
+          <joint name="link1_to_link2_BR" range="-1.57 1.57" actuatorfrcrange="-100 100"/>
+          <geom pos="-0.016 -0.136 -0.011" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link2"/>
+          <geom pos="-0.016 -0.136 -0.011" type="mesh" mesh="link2"/>
+        </body>
+      </body>
+    </body>
+
+    <body name="rectangle_FL" pos="0.2072 0.12445 0.09025" euler="1.5707963267948966 0 0">
+      <geom pos="0 0 -0.05755982219" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="rectangle"/>
+      <geom pos="0 0 -0.05755982219" type="mesh" mesh="rectangle"/>
+      <body name="link1_FL" pos="0.03 0.03 -0.057540714">
+        <joint name="rectangle_to_link1_FL" range="-1.57 1.57" actuatorfrcrange="-100 100"/>
+        <geom pos="-0.00968398 -0.13146633 -0.014" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link1"/>
+        <geom pos="-0.00968398 -0.13146633 -0.014" type="mesh" mesh="link1"/>
+        <body name="link2_FL" pos="0.00041797 -0.12084033 -0.00162">
+          <site name="foot_site_FL" type="sphere" size="0.02" pos="0 -0.12 0.005" rgba="1 0 0 0.4"/>
+          <joint name="link1_to_link2_FL" range="-1.57 1.57" actuatorfrcrange="-100 100"/>
+          <geom pos="-0.016 -0.136 -0.011" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link2"/>
+          <geom pos="-0.016 -0.136 -0.011" type="mesh" mesh="link2"/>
+        </body>
+      </body>
+    </body>
+
+    <body name="rectangle_BL" pos="0.0072 0.12486 0.09025" euler="1.5707963267948966 0 0">
+      <geom pos="0 0 -0.05755982219" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="rectangle"/>
+      <geom pos="0 0 -0.05755982219" type="mesh" mesh="rectangle"/>
+      <body name="link1_BL" pos="0.03 0.03 -0.057540714">
+        <joint name="rectangle_to_link1_BL" range="-1.57 1.57" actuatorfrcrange="-100 100"/>
+        <geom pos="-0.00968398 -0.13146633 -0.014" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link1"/>
+        <geom pos="-0.00968398 -0.13146633 -0.014" type="mesh" mesh="link1"/>
+        <body name="link2_BL" pos="0.00041797 -0.12084033 -0.00162">
+          <site name="foot_site_BL" type="sphere" size="0.02" pos="0 -0.12 0.005" rgba="1 0 0 0.4"/>
+          <joint name="link1_to_link2_BL" range="-1.57 1.57" actuatorfrcrange="-100 100"/>
+          <geom pos="-0.016 -0.136 -0.011" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="link2"/>
+          <geom pos="-0.016 -0.136 -0.011" type="mesh" mesh="link2"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <sensor>
+    <touch name="foot_force_FR" site="foot_site_FR"/>
+    <touch name="foot_force_BR" site="foot_site_BR"/>
+    <touch name="foot_force_FL" site="foot_site_FL"/>
+    <touch name="foot_force_BL" site="foot_site_BL"/>
+  </sensor>
+</mujoco>
