@@ -10,11 +10,37 @@ from leg_config import LEGS
 # LOAD MODEL
 # Now the generated MJCF (quadruped_generated.xml) instead of URDF --
 # switched so each leg could carry a real foot_site + touch sensor,
-# same pattern as leg_generated.xml / python_floor.py.
+# same pattern as leg_generated.xml / python_floor.py. As of the
+# chassis integration, the legs are nested under a free "chassis"
+# body (body1.STL) instead of being direct children of the world --
+# see build_quadruped.py for that change.
 # ============================================================
 
 model = mujoco.MjModel.from_xml_path("quadruped_generated.xml")
 data = mujoco.MjData(model)
+
+
+# ============================================================
+# IMPORTANT: mj_forward vs mj_step
+#
+# This script only ever calls mujoco.mj_forward(), never mj_step().
+# mj_forward recomputes derived quantities (site positions, sensor
+# readings, contact forces) from the CURRENT qpos -- it does not
+# integrate anything over time. Every frame, this script sets leg
+# qpos directly from IK and calls mj_forward just to refresh what's
+# rendered.
+#
+# That means giving the chassis a <freejoint/> does NOT make it fall,
+# tip, or react to gravity or foot contact on its own -- nothing in
+# this loop ever writes to the chassis's own qpos, so it just stays
+# at its initial pose indefinitely, exactly like before the chassis
+# existed. The freejoint makes the chassis ABLE to move; actually
+# moving it needs either mj_step() (real physics integration, which
+# then also means the legs can't be qpos-teleported anymore --
+# they'd need actuators driving toward the IK targets instead), or
+# some other explicit rule for updating the chassis's own qpos each
+# frame. That's a separate task from getting this file to run.
+# ============================================================
 
 
 # ============================================================
@@ -117,7 +143,7 @@ for name in LEG_PHASE:
     site_id = _find_site(f"foot_site_{name}")
     sensor_adr = model.sensor_adr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SENSOR, f"foot_force_{name}")]
     mujoco.mj_forward(model, data)
-    hip = data.xanchor[j1].copy()
+    hip = data.xanchor[j1].copy()  # initial snapshot; refreshed every frame below once the loop starts
     ref = _MIRRORED_REF if LEGS[name]["mirror"] else _UNMIRRORED_REF
     leg_info[name] = dict(j1=j1, j2=j2, site=site_id, sensor_adr=sensor_adr, hip=hip, ref=ref, warm_start=None)
 
@@ -209,6 +235,12 @@ def key_callback(keycode):
 # Each frame also reads the touch sensors (data.sensordata at each
 # leg's sensor_adr) so ground contact is visible in the console, not
 # just assumed from the gait phase.
+#
+# info["hip"] is now refreshed from data.xanchor at the top of every
+# frame, before it's used to compute this frame's foot targets --
+# previously it was captured once at setup and never touched again,
+# which was fine when every leg was pinned directly to the world, but
+# would go stale as soon as the chassis is actually free to move.
 # ============================================================
 
 PRINT_EVERY = 40  # throttle sensor printing so the console stays readable
@@ -224,6 +256,7 @@ with mujoco.viewer.launch_passive(model, data, key_callback=key_callback) as vie
         t = time.time() - start_time
 
         for name, info in leg_info.items():
+            info["hip"] = data.xanchor[info["j1"]].copy()
             x_des, z_des = foot_trajectory(t, LEG_PHASE[name])
             q1v, q2v = solve_leg_ik(
                 info["j1"], info["j2"], info["site"], info["hip"], info["ref"],

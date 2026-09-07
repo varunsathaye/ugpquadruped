@@ -18,6 +18,16 @@ changes between legs except for the lateral (local Z) component of
 the two joint origins, which gets negated for mirrored legs -- see
 mirror_origin(). Everything else differs only by the per-leg hip_pos
 and the shared BASE_ROLL rotation (both from leg_config.py).
+
+CHASSIS INTEGRATION (body1.STL):
+The 4 legs used to be direct children of <worldbody>, each pinned to
+its hip_pos in world space -- there was no actual robot body, just 4
+independently-clamped leg rigs. This adds a real chassis body (from
+body1.STL, exported from Assem2's body1 part) with a <freejoint/> so
+it's a free rigid body, and nests all 4 legs inside it instead of the
+world. leg_config.py's hip_pos values were already documented as
+relative to a "body1 reference point," so the legs' pos= values don't
+change at all -- only which element they're nested under.
 """
 
 import math
@@ -41,6 +51,43 @@ FOOT_SITE_POS = "0 -0.12 0.005"
 # reposition the mesh itself for mirrored legs, see mirror_origin().
 RECTANGLE_Z_MIN_MM = 0.01910819
 RECTANGLE_Z_MAX_MM = 57.540714
+
+# ---------------------------------------------------------------
+# body1.STL (chassis) -- measured directly from the exported mesh:
+# bounding box X:[0,400] Y:[0,220] Z:[0,115] mm. Origin sits at one
+# corner, same situation rectangle.STL was in.
+#
+# X and Z: hip_pos's X and Z values fall inside this range in a way
+# that's physically plausible without any shift (e.g. legs mounted
+# near the top of the block, one hip slightly behind the block's own
+# X=0 edge) -- so no correction applied on those axes.
+#
+# Y: hip_pos is symmetric about Y=0 (left/right legs at roughly
+# +-125mm, mirroring around the robot's centerline), but the mesh's
+# own Y range is entirely positive (0 to 220mm) -- there's no
+# corresponding negative side at all. That means the mesh's local
+# origin is NOT on the centerline. Shifting it by -110mm (half the
+# width) centers the block on the same Y=0 axis the legs mirror
+# around.
+#
+# UNVERIFIED: this assumes body1's own part origin in Assem2.STEP is
+# the same "body1 reference point" hip_pos is measured from for X and
+# Z. Load quadruped_generated.xml in the viewer and check the block
+# visually lines up with all 4 hip mounts before trusting this --
+# if it's off, it'll most likely need an X and/or Z shift added the
+# same way Y was handled here.
+BODY1_Y_MIN_MM = 0.0
+BODY1_Y_MAX_MM = 220.0
+BODY1_MESH_POS = f"0 {-(BODY1_Y_MIN_MM + BODY1_Y_MAX_MM) / 2000.0} 0"
+
+# Alumina, as assigned to body1 in SolidWorks -- solid ceramic alumina
+# is ~3950 kg/m^3. Given as a density (not a fixed mass) so MuJoCo
+# derives mass and inertia from the actual mesh volume automatically,
+# same auto-computation the leg links already rely on implicitly.
+# Revisit if the real chassis material/manufacturing ends up different
+# from what's currently assigned in CAD -- solid alumina is unusual
+# for a robot chassis and this may just be a CAD placeholder.
+CHASSIS_DENSITY_KG_M3 = 3950
 
 
 def mirror_origin(xyz_str):
@@ -128,9 +175,27 @@ def leg_body(name, cfg, geo):
 """
 
 
+def chassis_body(legs_xml):
+    # pos="0 0 0": hip_pos already carries the height (z~0.09m) that
+    # used to place each leg directly in world space, so starting the
+    # chassis at the origin exactly reproduces the old world-fixed
+    # geometry at t=0 -- nothing visually jumps when this lands, the
+    # chassis just becomes free to move away from that pose afterward
+    # (once something is actually driving/integrating it -- see the
+    # note in simulate_quadruped.py about mj_forward vs mj_step).
+    return f"""
+    <body name="chassis" pos="0 0 0">
+      <freejoint name="chassis_free"/>
+      <geom name="chassis_visual" pos="{BODY1_MESH_POS}" type="mesh" contype="0" conaffinity="0" group="1" density="0" mesh="body1"/>
+      <geom name="chassis_collision" pos="{BODY1_MESH_POS}" type="mesh" mesh="body1" density="{CHASSIS_DENSITY_KG_M3}"/>
+{legs_xml}    </body>
+"""
+
+
 def build():
     geo = parse_leg(SOURCE_URDF)
     legs_xml = "".join(leg_body(name, cfg, geo) for name, cfg in LEGS.items())
+    chassis_xml = chassis_body(legs_xml)
     sensors_xml = "".join(
         f'    <touch name="foot_force_{name}" site="foot_site_{name}"/>\n' for name in LEGS
     )
@@ -149,13 +214,14 @@ def build():
   <compiler angle="radian" meshdir="../meshes/"/>
 
   <asset>
+    <mesh name="body1" content_type="model/stl" file="../meshes/body1.STL" scale="0.001 0.001 0.001"/>
     <mesh name="rectangle" content_type="model/stl" file="../meshes/rectangle.stl" scale="0.001 0.001 0.001"/>
     <mesh name="link1" content_type="model/stl" file="../meshes/link1.STL" scale="0.001 0.001 0.001"/>
     <mesh name="link2" content_type="model/stl" file="../meshes/link2.STL" scale="0.001 0.001 0.001"/>
   </asset>
 
   <worldbody>
-{ground_xml}{legs_xml}  </worldbody>
+{ground_xml}{chassis_xml}  </worldbody>
 
   <sensor>
 {sensors_xml}  </sensor>
@@ -165,7 +231,7 @@ def build():
     with open(OUTPUT_XML, "w") as f:
         f.write(xml)
 
-    print(f"Wrote {OUTPUT_XML} with legs: {', '.join(LEGS)}")
+    print(f"Wrote {OUTPUT_XML} with chassis: body1.STL, legs: {', '.join(LEGS)}")
     print(f"Sites: {', '.join('foot_site_'+n for n in LEGS)}")
     print(f"Touch sensors: {', '.join('foot_force_'+n for n in LEGS)}")
 
