@@ -18,11 +18,38 @@ hip_rpy for why.
 
 import math
 
+# ---------------------------------------------------------------
+# TUNING LEG SPACING -- this dict is the only place to change it.
+# Because every leg is mounted with BASE_ROLL (pi/2 about X), the
+# three hip_pos components map to world axes as:
+#
+#   x -> fore/aft.  WHEELBASE = front x - rear x. The rectangle
+#        bracket extends +0.095m FORWARD from x, so x is the
+#        bracket's REAR edge.
+#   y -> left/right. TRACK = |y| * 2. The bracket extends OUTWARD
+#        from y (away from the centerline), so |y| is exactly the
+#        bracket's inner face -- set it to the chassis half-width
+#        to sit flush. Sign must agree with "mirror": negative y
+#        for mirror=False (right side), positive for mirror=True.
+#   z -> height. The bracket extends +0.097m UPWARD from z, so z
+#        is the bracket's BOTTOM edge.
+#
+# Values below are a symmetric layout fitted to body1.STL, whose
+# measured extents are X[0, 0.400] Y[-0.110, 0.110] Z[0, 0.115]:
+#   x = 0.305 / 0.000 puts each bracket flush with the chassis's
+#       front and rear faces (wheelbase 0.305m, the most the
+#       0.400m body allows with a 0.095m bracket).
+#   y = +-0.110 is the chassis side face, closing the ~15mm air
+#       gap the old Assem2-derived +-0.125 values left.
+# The old values were read straight out of Assem2.STEP and were
+# neither symmetric (left pair sat 27.6mm forward of the right)
+# nor consistent with body1.STL's own extents.
+# ---------------------------------------------------------------
 LEGS = {
-    "FR": {"hip_pos": (0.17956, -0.12527, 0.09025), "mirror": False},
-    "BR": {"hip_pos": (-0.02044, -0.12486, 0.09025), "mirror": False},
-    "FL": {"hip_pos": (0.20720, 0.12445, 0.09025), "mirror": True},
-    "BL": {"hip_pos": (0.00720, 0.12486, 0.09025), "mirror": True},
+    "FR": {"hip_pos": (0.30500, -0.11000, 0.09025), "mirror": False},
+    "BR": {"hip_pos": (0.00000, -0.11000, 0.09025), "mirror": False},
+    "FL": {"hip_pos": (0.30500, 0.11000, 0.09025), "mirror": True},
+    "BL": {"hip_pos": (0.00000, 0.11000, 0.09025), "mirror": True},
 }
 
 # ---------------------------------------------------------------
